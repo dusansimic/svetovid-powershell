@@ -1,5 +1,3 @@
-#Requires -RunAsAdministrator
-
 Function Test-EnvironmentVariableContainsValue {
   param (
     [String] $Variable,
@@ -24,6 +22,7 @@ If (-Not(Test-Path -Path $LibraryDirectory)) {
 }
 
 If (-Not(Test-Path -Path $LibraryPath)) {
+  [Net.ServicePointManager]::SecurityProtocol = "Tls, Tls11, Tls12, Ssl3"
   Invoke-WebRequest $FileUrl -OutFile $LibraryPath
 }
 

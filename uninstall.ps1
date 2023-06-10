@@ -1,4 +1,16 @@
-#Requires -RunAsAdministrator
+Function Test-EnvironmentVariableContainsValue {
+  param (
+    [String] $Variable,
+    [String] $Value,
+    [String] $Scope
+  )
+
+  $var = [System.Environment]::GetEnvironmentVariable($Variable, $Scope)
+  If ($var -ne $null) {
+    Return $var -split ";" -contains $Value
+  }
+  Return $false
+}
 
 Function Remove-ValueFromEnvironmentVariable {
   param (
