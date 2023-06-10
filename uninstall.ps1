@@ -1,15 +1,20 @@
-Function Test-EnvironmentVariableContainsValue {
-  param (
-    [String] $Variable,
-    [String] $Value,
-    [String] $Scope
-  )
-
-  $var = [System.Environment]::GetEnvironmentVariable($Variable, $Scope)
-  If ($var -ne $null) {
-    Return $var -split ";" -contains $Value
+Function Request-PrivilegeElevation {
+  if (-Not
+    (New-Object Security.Principal.WindowsPrincipal(
+      [Security.Principal.WindowsIdentity]::GetCurrent()
+    )).IsInRole(
+      [Security.Principal.WindowsBuiltInRole]::Administrator
+    )
+  ) {
+    Start-Process `
+      -FilePath 'powershell' `
+      -ArgumentList (
+        '-File', $MyInvocation.MyCommand.Source, $args `
+        | ForEach-Object{ $_ }
+      ) `
+      -Verb RunAs
+    exit
   }
-  Return $false
 }
 
 Function Remove-ValueFromEnvironmentVariable {
@@ -29,6 +34,8 @@ Function Remove-ValueFromEnvironmentVariable {
 $LibraryDirectory = "\Program Files\Svetovid Library"
 $LibraryFile = "svetovid-lib.jar"
 $LibraryPath = "$LibraryDirectory\$LibraryFile"
+
+Request-PrivilegeElevation
 
 Remove-Item $LibraryDirectory -Recurse
 
