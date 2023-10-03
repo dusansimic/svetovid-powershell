@@ -1,22 +1,3 @@
-Function Request-PrivilegeElevation {
-  if (-Not
-    (New-Object Security.Principal.WindowsPrincipal(
-      [Security.Principal.WindowsIdentity]::GetCurrent()
-    )).IsInRole(
-      [Security.Principal.WindowsBuiltInRole]::Administrator
-    )
-  ) {
-    Start-Process `
-      -FilePath 'powershell' `
-      -ArgumentList (
-        '-File', $MyInvocation.MyCommand.Source, $args `
-        | ForEach-Object{ $_ }
-      ) `
-      -Verb RunAs
-    exit
-  }
-}
-
 Function Remove-ValueFromEnvironmentVariable {
   param (
     [String] $Variable,
@@ -31,12 +12,11 @@ Function Remove-ValueFromEnvironmentVariable {
   }
 }
 
-$LibraryDirectory = "\Program Files\Svetovid Library"
+$LocalAppDataDirectory = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::LocalApplicationData)
+$LibraryDirectory = "$LocalAppDataDirectory\Svetovid Library"
 $LibraryFile = "svetovid-lib.jar"
 $LibraryPath = "$LibraryDirectory\$LibraryFile"
 
-Request-PrivilegeElevation
-
 Remove-Item $LibraryDirectory -Recurse
 
-Remove-ValueFromEnvironmentVariable "CLASSPATH" $LibraryPath "Machine"
+Remove-ValueFromEnvironmentVariable "CLASSPATH" $LibraryPath "User"
